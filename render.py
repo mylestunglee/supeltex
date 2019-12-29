@@ -65,12 +65,14 @@ def opengl_render(vertex_data):
 	program_id = load_program('vertex.glsl', 'fragment.glsl')
 	vbo_id = load_vbo(vertex_data)
 	link_shaders(program_id)
-	gl.glDrawArrays(gl.GL_TRIANGLES, 0, vertex_data.size // 4)
+	gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, vertex_data.size // 4)
 
 def render(width, height, vertex_data, filename):
 	glut.glutInit()
 
-	glut.glutInitDisplayMode(glut.GLUT_ALPHA)
+	# 8x anti-aliasing
+	glut.glutSetOption(glut.GLUT_MULTISAMPLE, 8);
+	glut.glutInitDisplayMode(glut.GLUT_ALPHA | glut.GLUT_MULTISAMPLE)
 	glut.glutInitWindowSize(width, height)
 	glut.glutCreateWindow('')
 
