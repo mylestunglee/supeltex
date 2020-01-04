@@ -4,15 +4,42 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 
-points = geometry.calc_geometry(
-	{
-		'centre': np.array([0, 0]),
-		'size': np.array([0.7, 1]),
-		'power': 2.4
-	},	{
-		'centre': np.array([0, -0.3]),
-		'size': np.array([0.2, 0.4]),
-		'power': 2
-	}, 1000)
+parameters_outer = {
+	'centre': np.array([0.0, 0.0]),
+	'size': np.array([0.8, 1.0]),
+	'power': 2.3
+}
 
-render.render(2 ** 10, 2 ** 10, points.flatten().astype(np.float32), 'output.png')
+parameters_refraction = {
+	'centre': np.array([0.0, 0.2]),
+	'size': np.array([0.64, 0.8]),
+	'power': 2
+}
+
+parameters_inner = {
+	'centre': np.array([0.0, -0.2]),
+	'size': np.array([0.2, 0.4]),
+	'power': 2.3
+}
+
+parameters_centre = {
+	'centre': np.array([0.0, -0.2]),
+	'size': np.array([0.0, 0.0]),
+	'power': 2.3
+}
+
+samples = 1000
+
+def calc_renderable_geometry(parameters_1, parameters_2):
+	return geometry.calc_geometry(parameters_1, parameters_2, 1000).flatten().astype(np.float32)
+
+geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
+geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
+geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+
+geometries = [geometry_glow, geometry_colour, geometry_pupil]
+fragment_shader_filenames = ['fragment_glow.glsl', 'fragment_colour.glsl', 'fragment_pupil.glsl']
+
+image_size = 1024
+
+render.render(image_size, image_size, geometries, fragment_shader_filenames, 'output.png')

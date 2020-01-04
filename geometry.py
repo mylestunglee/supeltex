@@ -24,6 +24,10 @@ def calc_parametric_distance(t_1, parameters_1, t_2, parameters_2):
 		calc_parametric_point(t_2, parameters_2))
 
 def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
+	# t_2 parameter is independent of distance if parameters_2 represents a dot
+	if not parameters_2['size'].any():
+		return t_1
+
 	def cost_function(t):
 		return calc_parametric_distance(t_1, parameters_1, t, parameters_2)
 

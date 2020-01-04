@@ -32,23 +32,26 @@ def load_program(vertex_shader_filename, fragment_shader_filename):
 	gl.glLinkProgram(program_id)
 
 	if gl.glGetProgramiv(program_id, gl.GL_LINK_STATUS) != gl.GL_TRUE:
-		glDeleteProgram(program_id)
-		glDeleteShader(vertex_shader_id)
-		glDeleteShader(fragment_shader_id)
+		gl.glDeleteProgram(program_id)
+		gl.glDeleteShader(vertex_shader_id)
+		gl.glDeleteShader(fragment_shader_id)
 		info = glGetProgramInfoLog(program_id)
 		raise RuntimeError('Error linking program: {}'.format(info))
 
-	return program_id
+	return (program_id, vertex_shader_id, fragment_shader_id)
 
-def load_vbo(vertex_data):
+def load_vbo(geometry):
 	vbo_id = gl.glGenBuffers(1)
 	gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo_id)
 	gl.glBufferData(
 		gl.GL_ARRAY_BUFFER,
-		gl.ArrayDatatype.arrayByteCount(vertex_data),
-		vertex_data,
+		gl.ArrayDatatype.arrayByteCount(geometry),
+		geometry,
 		gl.GL_STATIC_DRAW)
 	return vbo_id
+
+def unload_vbo(vbo_id):
+	gl.glDeleteBuffers(vbo_id, 1)
 
 def link_shaders(program_id):
 	gl.glVertexAttribPointer(
@@ -61,13 +64,21 @@ def link_shaders(program_id):
 	gl.glEnableVertexAttribArray(gl.glGetAttribLocation(program_id, 'vertex'))
 	gl.glUseProgram(program_id)
 
-def opengl_render(vertex_data):
-	program_id = load_program('vertex.glsl', 'fragment.glsl')
-	vbo_id = load_vbo(vertex_data)
-	link_shaders(program_id)
-	gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, vertex_data.size // 4)
+def unlink_shaders(program_id, vertex_shader_id, fragment_shader_id):
+	gl.glDisableVertexAttribArray(gl.glGetAttribLocation(program_id, 'vertex'))
+	gl.glDeleteProgram(program_id)
+	gl.glDeleteShader(vertex_shader_id)
+	gl.glDeleteShader(fragment_shader_id)
 
-def render(width, height, vertex_data, filename):
+def opengl_render(geometry, fragment_shader_filename):
+	(program_id, vertex_shader_id, fragment_shader_id) = load_program('vertex.glsl', fragment_shader_filename)
+	vbo_id = load_vbo(geometry)
+	link_shaders(program_id)
+	gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, geometry.size // 4)
+	unlink_shaders(program_id, vertex_shader_id, fragment_shader_id)
+	unload_vbo(vbo_id)
+
+def render(width, height, geometries, fragment_shader_filenames, output_filename):
 	glut.glutInit()
 
 	# 8x anti-aliasing
@@ -76,9 +87,13 @@ def render(width, height, vertex_data, filename):
 	glut.glutInitWindowSize(width, height)
 	glut.glutCreateWindow('')
 
-	opengl_render(vertex_data)
+	gl.glEnable(gl.GL_BLEND);
+	gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
+
+	for geometry, filename in zip(geometries, fragment_shader_filenames):
+		opengl_render(geometry, filename)
 
 	gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
 	data = gl.glReadPixels(0, 0, width, height, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
 	image = Image.frombytes('RGBA', (width, height), data)
-	image.save(filename)
+	image.save(output_filename)
