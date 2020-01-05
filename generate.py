@@ -1,3 +1,5 @@
+# Generates an image of overlapping ellipical shapes using OpenGL shaders
+
 import render
 import geometry
 import numpy as np

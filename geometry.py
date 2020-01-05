@@ -2,6 +2,19 @@ import numpy as np
 import math
 from scipy.optimize import minimize
 
+def rotate(origin, point, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in radians.
+    """
+    ox, oy = origin
+    px, py = point
+
+    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
+    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
+    return qx, qy
+
 def signed_power(base, exponent):
 	if base < 0:
 		return -((-base) ** exponent)
@@ -14,9 +27,17 @@ def calc_parametric_point(t, parameters):
 	centre = parameters['centre']
 	size = parameters['size']
 	power = parameters['power']
+	angle = 0
+
+	if 'angle' in parameters:
+		angle = parameters['angle']
+
 	x = centre[0] - size[0] * signed_power(math.sin(t), 2 / power)
 	y = centre[1] + size[1] * signed_power(math.cos(t), 2 / power)
-	return np.array([x, y])
+
+	x2, y2 = rotate(centre, (x, y), angle)
+
+	return np.array([x2, y2])
 
 def calc_parametric_distance(t_1, parameters_1, t_2, parameters_2):
 	return np.linalg.norm(
