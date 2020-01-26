@@ -35,7 +35,7 @@ def calc_parametric_point(t, parameters):
 	x = centre[0] - size[0] * signed_power(math.sin(t), 2 / power)
 	y = centre[1] + size[1] * signed_power(math.cos(t), 2 / power)
 
-	x2, y2 = rotate(centre, (x, y), angle)
+	x2, y2 = rotate(centre, (x, y), -math.radians(angle))
 
 	return np.array([x2, y2])
 
