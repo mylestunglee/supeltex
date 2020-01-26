@@ -6,7 +6,7 @@ out vec4 colour;
 void main(void)
 {
 	float pi = radians(180.0);
-
-    colour = vec4(1.0, 0.0, 0.0, 0.5);
+	float theta = (angle + pi) / (2.0 * pi);
+    colour = vec4(1.0, theta, theta, polarity);
 }
     

@@ -5,6 +5,7 @@ import geometry
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
+from math import pi
 
 parameters_outer = {
 	'centre': np.array([0.0, 0.0]),
@@ -35,9 +36,19 @@ samples = 1000
 def calc_renderable_geometry(parameters_1, parameters_2):
 	return geometry.calc_geometry(parameters_1, parameters_2, 1000).flatten().astype(np.float32)
 
-geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
-geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
-geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+def calc_simple_geometry(bottom, top):
+	return np.array([
+		-1, bottom, -pi, 0,
+		1, bottom, pi, 0,
+		-1, top, -pi, 1,
+		1, top, pi, 1]).astype(np.float32)
+
+#geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
+#geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
+#geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+geometry_pupil = calc_simple_geometry(-1, -1/3)
+geometry_glow = calc_simple_geometry(-1/3, 1/3)
+geometry_colour = calc_simple_geometry(1/3, 1)
 
 geometries = [geometry_glow, geometry_colour, geometry_pupil]
 fragment_shader_filenames = ['fragment_glow.glsl', 'fragment_colour.glsl', 'fragment_pupil.glsl']
