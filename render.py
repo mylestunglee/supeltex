@@ -70,28 +70,50 @@ def unlink_shaders(program_id, vertex_shader_id, fragment_shader_id):
 	gl.glDeleteShader(vertex_shader_id)
 	gl.glDeleteShader(fragment_shader_id)
 
-def opengl_render(geometry, fragment_shader_filename):
-	(program_id, vertex_shader_id, fragment_shader_id) = load_program('vertex.glsl', fragment_shader_filename)
+def set_uniforms(program_id, patch):
+	for key in patch:
+		value = patch[key]
+		loc = gl.glGetUniformLocation(program_id, key)
+
+		if loc < 0:
+			raise RuntimeError('Invalid uniform name: {}'.format(key))
+
+		if type(value) == float:
+			gl.glUniform1f(loc, value)
+		elif type(value) == tuple:
+			if len(value) == 2:
+				gl.glUniform2f(loc, *value)
+			elif len(value) == 3:
+				gl.glUniform3f(loc, *value)
+			elif len(value) == 4:
+				gl.glUniform4f(loc, *value)
+			else:
+				raise RuntimeError('Tuple too many dimensions: {}'.format(value))
+		else:
+			raise RuntimeError('Invalid uniform {}: {}'.format(key, value))
+
+def opengl_render(geometry, patch):
+	(program_id, vertex_shader_id, fragment_shader_id) = load_program('vertex.glsl', 'fragment.glsl')
 	vbo_id = load_vbo(geometry)
 	link_shaders(program_id)
+	set_uniforms(program_id, patch)
 	gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, 0, geometry.size // 4)
 	unlink_shaders(program_id, vertex_shader_id, fragment_shader_id)
 	unload_vbo(vbo_id)
 
-def render(width, height, geometries, fragment_shader_filenames, output_filename):
+def render(width, height, geometry_patches, output_filename):
 	glut.glutInit()
 
-	# 8x anti-aliasing
-	glut.glutSetOption(glut.GLUT_MULTISAMPLE, 8);
-	glut.glutInitDisplayMode(glut.GLUT_ALPHA | glut.GLUT_MULTISAMPLE)
+	glut.glutInitDisplayMode(glut.GLUT_ALPHA)
 	glut.glutInitWindowSize(width, height)
 	glut.glutCreateWindow('')
 
+	gl.glDepthMask(gl.GL_FALSE)
 	gl.glEnable(gl.GL_BLEND);
 	gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 
-	for geometry, filename in zip(geometries, fragment_shader_filenames):
-		opengl_render(geometry, filename)
+	for geometry, patch in geometry_patches:
+		opengl_render(geometry, patch)
 
 	gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
 	data = gl.glReadPixels(0, 0, width, height, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)

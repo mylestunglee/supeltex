@@ -9,19 +9,19 @@ from math import pi
 
 parameters_outer = {
 	'centre': np.array([0.0, 0.0]),
-	'size': np.array([2/3, 1]),
-	'power': 7/3
+	'size': np.array([5/6, 1]),
+	'power': 13/6
 }
 
 parameters_refraction = {
 	'centre': np.array([0, 0]),
-	'size': np.array([0.6, 0.75]),
+	'size': np.array([2/3, 2/3]),
 	'power': 7/3
 }
 
 parameters_inner = {
-	'centre': np.array([0, -1/3]),
-	'size': np.array([0.2, 0.75-1/3]), # 3/4-1/3=9/12-4/12=5/12
+	'centre': np.array([0, -1/6]),
+	'size': np.array([1/3, 1/3]),
 	'power': 7/3
 }
 
@@ -43,16 +43,65 @@ def calc_simple_geometry(bottom, top):
 		-1, top, -pi, 1,
 		1, top, pi, 1]).astype(np.float32)
 
-#geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
-#geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
-#geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
-geometry_pupil = calc_simple_geometry(-1, -1/3)
-geometry_glow = calc_simple_geometry(-1/3, 1/3)
-geometry_colour = calc_simple_geometry(1/3, 1)
+geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
+geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
+geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+#geometry_glow = calc_simple_geometry(-1, 0)
+#geometry_colour = calc_simple_geometry(0, 1)
 
-geometries = [geometry_glow, geometry_colour, geometry_pupil]
-fragment_shader_filenames = ['fragment_glow.glsl', 'fragment_colour.glsl', 'fragment_pupil.glsl']
+patch_1 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.5,
+	'angle_size': (2 * pi) / 12 * 4,
+	'polarity_size': 0.5,
+	'sharpness': 2.0,
+	'shade': (1.0, 0.0, 0.0)
+}
+
+patch_2 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.25,
+	'angle_size': (2 * pi) / 12 * 4,
+	'polarity_size': 0.25,
+	'sharpness': 2.0,
+	'shade': (0.0, 1.0, 0.0)
+}
+
+patch_3 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.25,
+	'angle_size': (2 * pi) / 12 * 4,
+	'polarity_size': 0.125,
+	'sharpness': 2.0,
+	'shade': (0.0, 0.0, 1.0)
+}
+
+patch_4 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.5,
+	'angle_size': 2.0 * pi,
+	'polarity_size': 1.0,
+	'sharpness': 3.0,
+	'shade': (1.0, 1.0, 1.0)
+}
+
+patch_5 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.5,
+	'angle_size': 2.0 * pi,
+	'polarity_size': 1.0,
+	'sharpness': 3.0,
+	'shade': (0.0, 0.0, 0.0)
+}
+
+geometry_patches = [
+	(geometry_glow, patch_4),
+	(geometry_glow, patch_1),
+	(geometry_colour, patch_2),
+	(geometry_colour, patch_3),
+	(geometry_pupil, patch_5)
+]
 
 image_size = 512
 
-render.render(image_size, image_size, geometries, fragment_shader_filenames, 'output.png')
+render.render(image_size, image_size, geometry_patches, 'output.png')
