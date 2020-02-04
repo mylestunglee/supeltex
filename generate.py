@@ -55,7 +55,7 @@ patch_1 = {
 	'angle_size': (2 * pi) / 12 * 4,
 	'polarity_size': 0.5,
 	'sharpness': 2.0,
-	'shade': (1.0, 0.0, 0.0, 1.0)
+	'shade': (1.0, 0.0, 0.0)
 }
 
 patch_2 = {
@@ -64,7 +64,7 @@ patch_2 = {
 	'angle_size': (2 * pi) / 12 * 4,
 	'polarity_size': 0.25,
 	'sharpness': 2.0,
-	'shade': (0.0, 1.0, 0.0, 1.0)
+	'shade': (0.0, 1.0, 0.0)
 }
 
 patch_3 = {
@@ -73,7 +73,7 @@ patch_3 = {
 	'angle_size': (2 * pi) / 12 * 4,
 	'polarity_size': 0.125,
 	'sharpness': 2.0,
-	'shade': (0.0, 0.0, 1.0, 1.0)
+	'shade': (0.0, 0.0, 1.0)
 }
 
 patch_4 = {
@@ -82,7 +82,7 @@ patch_4 = {
 	'angle_size': 2.0 * pi,
 	'polarity_size': 1.0,
 	'sharpness': 3.0,
-	'shade': (1.0, 1.0, 1.0, 1.0)
+	'shade': (1.0, 1.0, 1.0)
 }
 
 patch_5 = {
@@ -91,7 +91,7 @@ patch_5 = {
 	'angle_size': 2.0 * pi,
 	'polarity_size': 1.0,
 	'sharpness': 3.0,
-	'shade': (0.0, 0.0, 0.0, 1.0)
+	'shade': (0.0, 0.0, 0.0)
 }
 
 geometry_patches = [
