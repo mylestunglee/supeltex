@@ -34,7 +34,7 @@ parameters_centre = {
 samples = 1000
 
 def calc_renderable_geometry(parameters_1, parameters_2):
-	return geometry.calc_geometry(parameters_1, parameters_2, 1000).flatten().astype(np.float32)
+	return geometry.calc_geometry(parameters_1, parameters_2, samples).flatten().astype(np.float32)
 
 def calc_simple_geometry(bottom, top):
 	return np.array([
@@ -43,9 +43,10 @@ def calc_simple_geometry(bottom, top):
 		-1, top, -pi, 1,
 		1, top, pi, 1]).astype(np.float32)
 
-geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
-geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
-geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+geometry_back = np.load('back.npy')
+geometry_glow = np.load('glow.npy')
+geometry_colour = np.load('colour.npy')
+geometry_pupil = np.load('pupil.npy')
 #geometry_glow = calc_simple_geometry(-1, 0)
 #geometry_colour = calc_simple_geometry(0, 1)
 
