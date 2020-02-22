@@ -74,7 +74,7 @@ geometry_patches = [
 	(geometry_pupil, patch_5)
 ]
 
-image_size = 512
+image_size = 32
 
 def append_projection(geometry_patches):
 	scale = 1.0
