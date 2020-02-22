@@ -76,4 +76,18 @@ geometry_patches = [
 
 image_size = 512
 
+def append_projection(geometry_patches):
+	scale = 1.0
+	offset = (0.0, 0.0)
+
+	if len(sys.argv) >= 4:
+		scale = float(sys.argv[1])
+		offset = (float(sys.argv[2]), float(sys.argv[3]))
+
+	for _, patch in geometry_patches:
+		patch['scale'] = scale
+		patch['offset'] = offset
+
+append_projection(geometry_patches)
+
 render.render(image_size, image_size, geometry_patches, 'output.png')
