@@ -7,35 +7,6 @@ import matplotlib.pyplot as plt
 import scipy
 from math import pi
 
-parameters_outer = {
-	'centre': np.array([0.0, 0.0]),
-	'size': np.array([5/6, 1]),
-	'power': 13/6
-}
-
-parameters_refraction = {
-	'centre': np.array([0, 0]),
-	'size': np.array([2/3, 2/3]),
-	'power': 7/3
-}
-
-parameters_inner = {
-	'centre': np.array([0, -1/6]),
-	'size': np.array([1/3, 1/3]),
-	'power': 7/3
-}
-
-parameters_centre = {
-	'centre': parameters_inner['centre'],
-	'size': np.array([0, 0]),
-	'power': parameters_inner['power']
-}
-
-samples = 1000
-
-def calc_renderable_geometry(parameters_1, parameters_2):
-	return geometry.calc_geometry(parameters_1, parameters_2, samples).flatten().astype(np.float32)
-
 def calc_simple_geometry(bottom, top):
 	return np.array([
 		-1, bottom, -pi, 0,
@@ -43,10 +14,10 @@ def calc_simple_geometry(bottom, top):
 		-1, top, -pi, 1,
 		1, top, pi, 1]).astype(np.float32)
 
-geometry_back = np.load('back.npy')
-geometry_glow = np.load('glow.npy')
-geometry_colour = np.load('colour.npy')
-geometry_pupil = np.load('pupil.npy')
+geometry_back = np.load('temp/back.npy')
+geometry_glow = np.load('temp/glow.npy')
+geometry_colour = np.load('temp/colour.npy')
+geometry_pupil = np.load('temp/pupil.npy')
 #geometry_glow = calc_simple_geometry(-1, 0)
 #geometry_colour = calc_simple_geometry(0, 1)
 
@@ -96,7 +67,7 @@ patch_5 = {
 }
 
 geometry_patches = [
-	(geometry_glow, patch_4),
+	(geometry_back, patch_4),
 	(geometry_glow, patch_1),
 	(geometry_colour, patch_2),
 	(geometry_colour, patch_3),

@@ -1,5 +1,7 @@
+from pathos.multiprocessing import ProcessingPool as Pool
 import numpy as np
 import math
+import tqdm
 from scipy.optimize import minimize
 
 def rotate(origin, point, angle):
@@ -73,13 +75,15 @@ def calc_geometry(parameters_1, parameters_2, samples=50):
 		point = calc_parametric_point(t, parameters_1)
 		return np.array([point[0], point[1], t, 0])
 
-	def calc_point_2(t_1, i):
+	def calc_point_2(t_1):
 		t_2 = calc_parametric_dual(t_1, parameters_1, parameters_2, 1 / (2 * math.pi * samples))
 		point = calc_parametric_point(t_2, parameters_2)
-		print(i)
 		return np.array([point[0], point[1], t_1, 1])
 
+	pool = Pool(16)
+
 	t_range = np.linspace(-math.pi, math.pi, samples)
-	points_1 = np.array([calc_point_1(t) for t in t_range])
-	points_2 = np.array([calc_point_2(t, i / samples) for i, t in enumerate(t_range)])
+	points_1 = list(tqdm.tqdm(pool.imap(calc_point_1, t_range), total=samples))
+	points_2 = list(tqdm.tqdm(pool.imap(calc_point_2, t_range), total=samples))
+
 	return np.array([point for points in zip(points_1, points_2) for point in points])

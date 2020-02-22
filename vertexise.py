@@ -32,22 +32,25 @@ parameters_back = {
     'power': 2
 }
 
+# Usage: python3 vertexise.py
 if len(sys.argv) > 1:
 	samples = int(sys.argv[1])
 else:
 	samples = 1000
 
-
-
 def calc_renderable_geometry(parameters_1, parameters_2):
     return geometry.calc_geometry(parameters_1, parameters_2, samples).flatten().astype(np.float32)
 
+print('Computing back...')
 geometry_back = calc_renderable_geometry(parameters_back, parameters_inner)
+print('Computing glow...')
 geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
+print('Computing colour...')
 geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
+print('Computing pupil...')
 geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
 
-np.save('back.npy', geometry_back)
-np.save('glow.npy', geometry_glow)
-np.save('colour.npy', geometry_colour)
-np.save('pupil.npy', geometry_pupil)
+np.save('temp/back.npy', geometry_back)
+np.save('temp/glow.npy', geometry_glow)
+np.save('temp/colour.npy', geometry_colour)
+np.save('temp/pupil.npy', geometry_pupil)
