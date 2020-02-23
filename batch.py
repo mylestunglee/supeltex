@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import solid
 import stitch
+import downsample
 
 directory = 'temp/images'
 
@@ -54,7 +55,8 @@ def optimise_image(samples, max_depth, comparable_resolution):
 	clean_images()
 	generate_geometry(samples)
 
-	for depth in range(max_depth):
+	# inclusive max_depth
+	for depth in range(max_depth + 1):
 		if depth == 0:
 			continue
 
@@ -62,13 +64,11 @@ def optimise_image(samples, max_depth, comparable_resolution):
 		# use non-strict-partially-complete tree structure to generate images
 		recursive([], 1, 0, 0, depth)
 		stitch.recursive(directory)
-		stitched = Image.open(directory + '/stitched.png')
-		comparable = stitched.resize((comparable_resolution, comparable_resolution), resample=Image.LINEAR)
-		comparable.save('temp/comparable/samples{}depth{}.png'.format(samples, depth))
+		downsample.downsample(directory + '/stitched.png', comparable_resolution, 'temp/comparable/samples{}depth{}.png'.format(samples, depth))
 		stitch.clean(directory)
 
 def main():
-	optimise_image(1024, 4, 256)
+	optimise_image(1024, 7, 256)
 
 if __name__ == '__main__':
 	main()
