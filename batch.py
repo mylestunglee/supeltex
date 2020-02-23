@@ -7,6 +7,9 @@ import subprocess
 import solid
 import stitch
 import downsample
+import index
+import combine
+import deindex
 
 directory = 'temp/images'
 
@@ -30,6 +33,7 @@ def recursive(stack, scale, x, y, depth):
 
 	if not exists(filepath):
 		generate_image(filepath, scale, x, y)
+		index.index(filepath)
 
 	# optimisation: further quads of the same colour result in the same image
 	if solid.is_solid(filepath):
@@ -39,6 +43,9 @@ def recursive(stack, scale, x, y, depth):
 	recursive(stack[:] + ['tr'], scale * 2, 2 * x - 1, 2 * y + 1, depth - 1)
 	recursive(stack[:] + ['bl'], scale * 2, 2 * x + 1, 2 * y - 1, depth - 1)
 	recursive(stack[:] + ['br'], scale * 2, 2 * x - 1, 2 * y - 1, depth - 1)
+
+	if depth > 1:
+		combine.combine(path)
 
 def clean_images():
 	try:
@@ -63,12 +70,13 @@ def optimise_image(samples, max_depth, comparable_resolution):
 		print('Computing image at depth {}'.format(depth))
 		# use non-strict-partially-complete tree structure to generate images
 		recursive([], 1, 0, 0, depth)
-		stitch.recursive(directory)
-		downsample.downsample(directory + '/stitched.png', comparable_resolution, 'temp/comparable/samples{}depth{}.png'.format(samples, depth))
-		stitch.clean(directory)
+		#stitch.recursive(directory)
+		#downsample.downsample(directory + '/stitched.png', comparable_resolution, 'temp/comparable/samples{}depth{}.png'.format(samples, depth))
+		#stitch.clean(directory)
+		deindex.deindex(directory + '/image.txt', 'temp/comparable/samples{}depth{}.png'.format(samples, depth))
 
 def main():
-	optimise_image(1024, 7, 256)
+	optimise_image(1024, 4, 256)
 
 if __name__ == '__main__':
 	main()
