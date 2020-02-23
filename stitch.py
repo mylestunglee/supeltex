@@ -1,6 +1,8 @@
 from os.path import exists
 from PIL import Image
 import sys
+import subprocess
+import shutil
 
 # stitch images
 def recursive(path):
@@ -16,8 +18,6 @@ def recursive(path):
 		for quad in quads:
 			if exists(path + '/' + quad + '/stitched.png'):
 				images.append(Image.open(path + '/' + quad + '/stitched.png'))
-			elif exists(path + '/' + quad + '/image.png'):
-				images.append(Image.open(path + '/' + quad + '/image.png'))
 			else:
 				raise Exception('Cannot find ' + quad + ' in path ' + path)
 
@@ -26,6 +26,7 @@ def recursive(path):
 		# we want to stitch images of different sizes
 		for i, quad in enumerate(quads):
 			if images[i].size[0] != width:
+				# resample method is not important because images[i] is a solid colour
 				images[i] = images[i].resize((width, width), resample=Image.NEAREST)
 
 		stitched = Image.new('RGBA', (width * 2, width * 2))
@@ -34,6 +35,11 @@ def recursive(path):
 		stitched.paste(im=images[2], box=(0, width))
 		stitched.paste(im=images[3], box=(width, width))
 		stitched.save(path + '/stitched.png')
+	else:
+		shutil.copyfile(path + '/image.png', path + '/stitched.png')
+
+def clean(path):
+	subprocess.run(['find', path, '-type', 'f', '-name', '*stitched.png' '-delete'])
 
 def main():
 	recursive(sys.argv[1])
