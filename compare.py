@@ -21,10 +21,11 @@ def sum_errors(filename1, filename2):
 			r1, g1, b1, a1 = pixels1[x, y]
 			r2, g2, b2, a2 = pixels2[x, y]
 
-			errors += abs(r2 - r1)
-			errors += abs(g2 - g1)
-			errors += abs(b2 - b1)
-			errors += abs(a2 - a1)
+			errors = max([errors,
+				abs(r2 - r1),
+				abs(g2 - g1),
+				abs(b2 - b1),
+				abs(a2 - a1)])
 
 	return errors
 
@@ -54,9 +55,12 @@ def generate_matrix():
 		print()
 
 def main():
-	data = np.loadtxt('dump2.txt')
-	fig = px.imshow(data)
-	fig.show()
+	if len(sys.argv) > 1:
+		generate_matrix()
+	else:
+		data = np.loadtxt('dump.txt')
+		fig = px.imshow(data)
+		fig.show()
 
 if __name__ == '__main__':
 	main()
