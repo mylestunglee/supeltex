@@ -57,7 +57,7 @@ def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
 	solution_wrapper = minimize(cost_function,
 		t_1,
 		method='nelder-mead',
-		options={'xatol': error_tolerance, 'disp': False})
+		options={'xatol': 0, 'disp': False, 'maxiter': 2**8})
 
 	solution = solution_wrapper.x[0]
 
