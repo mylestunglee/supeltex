@@ -1,5 +1,6 @@
 # Generates an image of overlapping ellipical shapes using OpenGL shaders
 
+import sys
 import render
 import geometry
 import numpy as np
@@ -67,8 +68,18 @@ patch_5 = {
 	'shade': (0.0, 0.0, 0.0)
 }
 
+patch_7 = {
+	'angle_centre': 0.0,
+	'polarity_centre': 0.5,
+	'angle_size': pi * (24.0 / 30.0),
+	'polarity_size': 0.5,
+	'sharpness': 3.0,
+	'shade': (0.25, 0.125, 0.25)
+}
+
 geometry_patches = [
 	(geometry_back, patch_4),
+	(geometry_glow, patch_7),
 	(geometry_glow, patch_1),
 	(geometry_colour, patch_2),
 	(geometry_colour, patch_3),

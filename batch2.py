@@ -4,7 +4,7 @@ from os.path import exists
 import multiprocessing
 import time
 
-tiles = 256
+tiles = 16
 
 offset = 1 - tiles
 def generate_image(pair):
