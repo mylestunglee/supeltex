@@ -17,8 +17,7 @@ def generate_geometry(samples):
 	subprocess.run(['python3', 'vertexise.py', str(samples)])
 
 def generate_image(filename, scale, x, y):
-	subprocess.run(['python3', 'generate.py', str(scale), str(x), str(y)])
-	shutil.move('output.png', filename)
+	subprocess.run(['python3', 'generate.py', str(scale), str(x), str(y), filename])
 
 def recursive(stack, scale, x, y, depth):
 	if depth == 0:

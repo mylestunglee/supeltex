@@ -43,7 +43,7 @@ ax.set_aspect('equal')
 for x in solutions:
 	r = x - beta
 	points = gen_circ_points(x, 0, r, samples)
-	print('\tfloat radius = {} * 2.0 / 3.0;\n\tfloat upper = {} * 2.0 / 3.0;'.format(r, x))
+	print('\tfloat radius = {} * 0.5;\n\tfloat upper = {} * 2.0 / 3.0;'.format(r, x))
 	ax.plot(points[:, 0], points[:, 1])
 
 X = np.linspace(0, alpha, samples)

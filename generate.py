@@ -14,7 +14,8 @@ def calc_simple_geometry(bottom, top):
 		-1, top, -pi, 1,
 		1, top, pi, 1]).astype(np.float32)
 
-geometry_back = np.load('temp/back.npy')
+geometry_back = calc_simple_geometry(-1.0, 1.0)
+#geometry_back = np.load('temp/back.npy')
 geometry_glow = np.load('temp/glow.npy')
 geometry_colour = np.load('temp/colour.npy')
 geometry_pupil = np.load('temp/pupil.npy')
@@ -90,4 +91,5 @@ def append_projection(geometry_patches):
 
 append_projection(geometry_patches)
 
-render.render(image_size, image_size, geometry_patches, 'output.png')
+# sys.argv = scale, offsetx offsety, filename
+render.render(image_size, image_size, geometry_patches, sys.argv[4])

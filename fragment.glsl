@@ -18,8 +18,8 @@ float power(float base, float exponent) {
 }
 
 void main(void) {
-    float radius = 2.5141369293352906 * 2.0 / 3.0;
-    float upper = 3.5141369293352906 * 2.0 / 3.0;
+    float radius = 2.5141369293352906 * 0.5;
+    float upper = 3.5141369293352906 * 0.5;
 	bool dark = pow(position.x, 2.0) + pow(position.y + upper, 2.0) < radius * radius;
 	float angle_offset = abs((angle - angle_centre) / angle_size);
 	float polarity_offset = abs((polarity - polarity_centre) / polarity_size);
