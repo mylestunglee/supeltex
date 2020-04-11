@@ -19,7 +19,7 @@ def main():
 	pairs = [(x, y) for x in range(tiles) for y in range(tiles)]
 	pool.map(generate_image, pairs)
 
-	source_size = 256
+	source_size = 512
 	target_size = source_size * tiles
 
 	stitched = Image.new('RGBA', (target_size, target_size))

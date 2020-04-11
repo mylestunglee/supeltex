@@ -16,6 +16,7 @@ def downsample(input_filename, target_size, output_filename):
 	cell_size = source_size // target_size
 
 	for x in range(target_size):
+		print(x)
 		for y in range(target_size):
 			# find average pixel
 			accum = np.zeros(4)
