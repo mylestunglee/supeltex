@@ -43,16 +43,21 @@ def generate_error_image():
 
 def generate_best_image():
 	samples = 256
-	image = Image.new('RGBA', (samples, samples))
+	image = Image.new('RGBA', (samples*2, samples*2))
 	pixels = image.load()
 
 	for y in range(samples):
+		print(y/samples)
 		for x in range(samples):
-			print(x, y)
-			tile = Image.open('temp/tiles/x{}y{}.png'.format(x, y))
-			#median = np.median(np.array(tile), axis=(0, 1))
-			mean = np.mean(np.array(tile), axis=(0, 1))
-			pixels[x, y] = tuple(map(int, mean))
+			tile = np.array(Image.open('temp/tiles/x{}y{}.png'.format(x, y)))
+			mean1 = np.mean(tile[:256,:256], axis=(0, 1))
+			mean2 = np.mean(tile[:256,256:], axis=(0, 1))
+			mean3 = np.mean(tile[256:,:256], axis=(0, 1))
+			mean4 = np.mean(tile[256:,256:], axis=(0, 1))
+			pixels[2*x, 2*y] = tuple(map(int, mean1))
+			pixels[2*x+1, 2*y] = tuple(map(int, mean2))
+			pixels[2*x, 2*y+1] = tuple(map(int, mean3))
+			pixels[2*x+1, 2*y+1] = tuple(map(int, mean4))
 
 	image.save('mean256.png')
 

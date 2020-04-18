@@ -3,6 +3,7 @@ import batch
 from os.path import exists
 import multiprocessing
 import time
+import downsample
 
 tiles = 16
 
@@ -29,6 +30,7 @@ def main():
 			tile = Image.open(name)
 			stitched.paste(tile, box=(x * source_size, y * source_size))
 	stitched.save('temp/tiles/stitched.png')
+	downsample.downsample('temp/tiles/stitched.png', 512, 'mean{}.png'.format(tiles))
 
 if __name__ == '__main__':
 	main()
