@@ -70,7 +70,7 @@ def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
 
 	return solution
 
-def calc_geometry(parameters_1, parameters_2, samples=50):
+def calc_geometry(parameters_1, parameters_2, samples=50, threads=8, hint=''):
 	def calc_point_1(t):
 		point = calc_parametric_point(t, parameters_1)
 		return np.array([point[0], point[1], t, 0])
@@ -80,10 +80,21 @@ def calc_geometry(parameters_1, parameters_2, samples=50):
 		point = calc_parametric_point(t_2, parameters_2)
 		return np.array([point[0], point[1], t_1, 1])
 
-	pool = Pool(16)
+	def calc_point(pair):
+		polarity, t = pair
 
-	t_range = np.linspace(-math.pi, math.pi, samples)
-	points_1 = list(tqdm.tqdm(pool.imap(calc_point_1, t_range), total=samples))
-	points_2 = list(tqdm.tqdm(pool.imap(calc_point_2, t_range), total=samples))
+		if not polarity:
+			return calc_point_1(t)
+		else:
+			return calc_point_2(t)
 
-	return np.array([point for points in zip(points_1, points_2) for point in points])
+	with Pool(threads) as pool:
+		t_range = np.linspace(-math.pi, math.pi, samples)
+		pair_range = [(polarity, t) for t in t_range for polarity in [False, True]]
+		points = list(tqdm.tqdm(
+			pool.imap(calc_point, pair_range),
+			total=len(pair_range),
+			desc=hint))
+		pool.close()
+
+	return np.array(points)

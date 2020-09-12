@@ -1,0 +1,21 @@
+{
+	"supels": {
+		"inner": {
+			"centre": [0.1, 0.0],
+			"size": [0.5, 0.3],
+			"power": 2.0
+		},
+		"outer": {
+			"centre": [0.0, 0.0],
+			"size": [1.0, 0.6],
+			"power": 3.0
+		}
+	},
+	"patches": {
+		"patch": {
+			"inner": "inner",
+			"outer": "outer",
+			"colour": [0.5, 0.5, 0.5]
+		}
+	}
+}

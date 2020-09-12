@@ -1,47 +1,55 @@
 import sys
 import geometry
 import numpy as np
+import json
+import os
 
-parameters_outer = {
-    'centre': np.array([0.0, 0.0]),
-    'size': np.array([20/30, 30/30]) * 0.75,
-    'power': 65/30
-}
+def generate_vertices(filename, samples):
+	with open(filename) as file:
+		raw_parameters = file.read()
 
-parameters_refraction = {
-    'centre': np.array([0, 0/30]),
-    'size': np.array([20/30, 25/30]) * 0.75,
-    'power': 70/30
-}
+	parameters = json.loads(raw_parameters)
+	supels = parse_supels(parameters)
+	patches = parse_patches(parameters)
 
-parameters_inner = {
-    'centre': np.array([0, -5/30]) * 0.75,
-    'size': np.array([1/4, 1/2]) * 0.75,
-    'power': 70/30
-}
+	generate_patch_vertices(patches, supels, samples)
 
-parameters_centre = {
-    'centre': parameters_inner['centre'],
-    'size': np.array([0, 0]),
-    'power': parameters_inner['power']
-}
+def parse_supels(parameters):
+	supels = {}
 
-# Usage: python3 vertexise.py
-if len(sys.argv) > 1:
-	samples = int(sys.argv[1])
-else:
-	samples = 1000
+	for name, supel in parameters['supels'].items():
+		supels[name] = {
+			'centre': np.array(supel['centre']),
+			'size': np.array(supel['size']),
+			'power': supel['power']
+		}
 
-def calc_renderable_geometry(parameters_1, parameters_2):
-    return geometry.calc_geometry(parameters_1, parameters_2, samples).flatten().astype(np.float32)
+	return supels
 
-print('Computing glow...')
-geometry_glow = calc_renderable_geometry(parameters_outer, parameters_inner)
-print('Computing colour...')
-geometry_colour = calc_renderable_geometry(parameters_refraction, parameters_inner)
-print('Computing pupil...')
-geometry_pupil = calc_renderable_geometry(parameters_inner, parameters_centre)
+def parse_patches(parameters):
+	patches = {}
 
-np.save('temp/glow.npy', geometry_glow)
-np.save('temp/colour.npy', geometry_colour)
-np.save('temp/pupil.npy', geometry_pupil)
+	for name, patch in parameters['patches'].items():
+		patches[name] = {
+			'inner': patch['inner'],
+			'outer': patch['outer'],
+			'colour': tuple(patch['colour'])
+		}
+
+	return patches
+
+def generate_patch_vertices(patches, supels, samples):
+	for name, patch in patches.items():
+		filename = 'chunk_{}.npy'.format(name)
+
+		if os.path.exists(filename):
+			continue
+
+		inner = supels[patch['inner']]
+		outer = supels[patch['outer']]
+		vertices = geometry.calc_geometry(outer, inner, samples, hint=name)
+		chunk = vertices.flatten().astype(np.float32)
+		np.save(filename, chunk)
+
+if __name__ == '__main__':
+	generate_vertices(sys.argv[1], int(sys.argv[2]))
