@@ -93,6 +93,7 @@ def set_uniforms(program_id, patch):
 			raise RuntimeError('Invalid uniform {}: {}'.format(key, value))
 
 def opengl_render(geometry, patch):
+	gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 	(program_id, vertex_shader_id, fragment_shader_id) = load_program('vertex.glsl', 'fragment.glsl')
 	vbo_id = load_vbo(geometry)
 	link_shaders(program_id)
@@ -101,21 +102,24 @@ def opengl_render(geometry, patch):
 	unlink_shaders(program_id, vertex_shader_id, fragment_shader_id)
 	unload_vbo(vbo_id)
 
-def render(width, height, geometry_patches, output_filename):
+def init(width, height):
 	glut.glutInit()
 
 	glut.glutInitDisplayMode(glut.GLUT_ALPHA)
 	glut.glutInitWindowSize(width, height)
-	glut.glutCreateWindow('')
+
+	window = glut.glutCreateWindow('a')
 
 	gl.glDepthMask(gl.GL_FALSE)
 	gl.glEnable(gl.GL_BLEND);
 	gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 
+def render(width, height, geometry_patches, output_filename):
 	for geometry, patch in geometry_patches:
 		opengl_render(geometry, patch)
 
 	gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
 	data = gl.glReadPixels(0, 0, width, height, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
+
 	image = Image.frombytes('RGBA', (width, height), data)
 	image.save(output_filename)
