@@ -15,7 +15,12 @@
 		"patch": {
 			"inner": "inner",
 			"outer": "outer",
-			"colour": [0.5, 0.5, 0.5]
+			"angle_centre": 0.0,
+			"angle_size": 2.0,
+			"polarity_centre": 0.5,
+			"polarity_size": 0.5,
+			"sharpness": 3.0,
+			"shade": [0.5, 0.5, 0.5]
 		}
 	}
 }
