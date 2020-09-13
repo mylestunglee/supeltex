@@ -104,7 +104,6 @@ def set_uniforms(program_id, patch):
 
 
 def opengl_render(geometry, patch):
-    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
     (program_id, vertex_shader_id, fragment_shader_id) = load_program(
         'vertex.glsl', 'fragment.glsl')
     vbo_id = load_vbo(geometry)
@@ -129,6 +128,8 @@ def init():
 
 
 def render(geometry_patches, output_filename):
+    gl.glClear(gl.GL_COLOR_BUFFER_BIT)
+
     for geometry, patch in geometry_patches:
         opengl_render(geometry, patch)
 

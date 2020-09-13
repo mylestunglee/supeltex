@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import minimize
 import math
 
+
 def rotate(origin, point, angle):
     """
     Rotate a point counterclockwise by a given angle around a given origin.
@@ -101,7 +102,5 @@ def calc_geometry(parameters_1, parameters_2, samples=50, processes=8, progress_
         for point in pool.imap(calc_point, pair_range):
             progress_bar.update(1)
             points.append(point)
-
-        pool.close()
 
     return np.array(points)

@@ -70,6 +70,7 @@ def generate_patch_vertices(patches, supels, samples, processes):
         filename = generate_chunk_filename(name)
 
         if os.path.exists(filename):
+            progress_bar.update(2 * samples)
             continue
 
         inner = supels[patch['inner']]
