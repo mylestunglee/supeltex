@@ -1,24 +1,21 @@
-import sys
-import geometry
-import numpy as np
+import argparse
 import json
 import os
-import render
+import sys
+
+import numpy as np
 import tqdm
 from PIL import Image
-from render import buffer_resolution as tile_resolution
-import argparse
 
-temp_directory = 'temp'
+import render
+from render import BUFFER_RESOLUTION as TILE_RESOLUTION
+import geometry
 
 
-def generate(
-        parameters_filename,
-        texture_filename,
-        tile_grid_size,
-        target_resolution,
-        samples,
-        processes):
+TEMP_DIRECTORY = 'temp'
+
+
+def generate(parameters_filename, texture_filename, tile_grid_size, target_resolution, samples, processes):
     with open(parameters_filename) as file:
         raw_parameters = file.read()
 
@@ -26,8 +23,8 @@ def generate(
     supels = parse_supels(parameters)
     patches = parse_patches(parameters)
 
-    if not os.path.exists(temp_directory):
-        os.mkdir(temp_directory)
+    if not os.path.exists(TEMP_DIRECTORY):
+        os.mkdir(TEMP_DIRECTORY)
 
     generate_patch_vertices(patches, supels, samples, processes)
     generate_tiles(patches, tile_grid_size)
@@ -125,7 +122,7 @@ def generate_tile(patches, scale, offset_x, offset_y, tile_filename):
 
 
 def compile_tiles(target_resolution, texture_filename, tile_grid_size):
-    compile_size = tile_grid_size * tile_resolution
+    compile_size = tile_grid_size * TILE_RESOLUTION
     compiled = Image.new('RGBA', (compile_size, compile_size))
 
     progress_bar = tqdm.tqdm(total=tile_grid_size ** 2, desc='compiling')
@@ -135,7 +132,7 @@ def compile_tiles(target_resolution, texture_filename, tile_grid_size):
             tile_filename = generate_tile_filename(x, y)
             tile = Image.open(tile_filename)
             compiled.paste(tile, box=(
-                x * tile_resolution, y * tile_resolution))
+                x * TILE_RESOLUTION, y * TILE_RESOLUTION))
             progress_bar.update(1)
 
     resized = compiled.resize(
@@ -144,11 +141,11 @@ def compile_tiles(target_resolution, texture_filename, tile_grid_size):
 
 
 def generate_chunk_filename(name):
-    return os.path.join(temp_directory, '{}.npy'.format(name))
+    return os.path.join(TEMP_DIRECTORY, '{}.npy'.format(name))
 
 
 def generate_tile_filename(x, y):
-    return os.path.join(temp_directory, 'x{}_y{}.png'.format(x, y))
+    return os.path.join(TEMP_DIRECTORY, 'x{}_y{}.png'.format(x, y))
 
 
 def main():
@@ -176,7 +173,7 @@ def main():
         return
 
     tile_grid_size = max(
-        1, int(np.ceil(args.source_resolution / tile_resolution)))
+        1, int(np.ceil(args.source_resolution / TILE_RESOLUTION)))
     generate(args.parameters, args.output, tile_grid_size,
              args.target_resolution, args.samples, args.processes)
 

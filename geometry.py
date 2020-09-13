@@ -1,9 +1,7 @@
 import pathos.multiprocessing as mp
 import numpy as np
-import math
-import tqdm
 from scipy.optimize import minimize
-
+import math
 
 def rotate(origin, point, angle):
     """
@@ -22,10 +20,9 @@ def rotate(origin, point, angle):
 def signed_power(base, exponent):
     if base < 0:
         return -((-base) ** exponent)
-    elif base > 0:
+    if base > 0:
         return base ** exponent
-    else:
-        return 0
+    return 0
 
 
 def calc_parametric_point(t, parameters):
@@ -40,7 +37,7 @@ def calc_parametric_point(t, parameters):
     x = centre[0] - size[0] * signed_power(math.sin(t), 2 / power)
     y = centre[1] + size[1] * signed_power(math.cos(t), 2 / power)
 
-    x2, y2 = rotate(centre, (x, y), -math.radians(angle))
+    x2, y2 = rotate(centre, (x, y), -np.radians(angle))
 
     return np.array([x2, y2])
 
@@ -51,7 +48,7 @@ def calc_parametric_distance(t_1, parameters_1, t_2, parameters_2):
         calc_parametric_point(t_2, parameters_2))
 
 
-def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
+def calc_parametric_dual(t_1, parameters_1, parameters_2):
     # t_2 parameter is independent of distance if parameters_2 represents a dot
     if not parameters_2['size'].any():
         return t_1
@@ -67,11 +64,11 @@ def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
     solution = solution_wrapper.x[0]
 
     # Nomalise solution in [-pi, pi) range
-    while solution < -math.pi:
-        solution += 2 * math.pi
+    while solution < -np.pi:
+        solution += 2 * np.pi
 
-    while solution >= math.pi:
-        solution -= 2 * math.pi
+    while solution >= np.pi:
+        solution -= 2 * np.pi
 
     return solution
 
@@ -83,7 +80,7 @@ def calc_geometry(parameters_1, parameters_2, samples=50, processes=8, progress_
 
     def calc_point_2(t_1):
         t_2 = calc_parametric_dual(
-            t_1, parameters_1, parameters_2, 1 / (2 * math.pi * samples))
+            t_1, parameters_1, parameters_2)
         point = calc_parametric_point(t_2, parameters_2)
         return np.array([point[0], point[1], t_1, 1])
 
@@ -92,11 +89,11 @@ def calc_geometry(parameters_1, parameters_2, samples=50, processes=8, progress_
 
         if not polarity:
             return calc_point_1(t)
-        else:
-            return calc_point_2(t)
+
+        return calc_point_2(t)
 
     with mp.ProcessingPool(processes) as pool:
-        t_range = np.linspace(-math.pi, math.pi, samples)
+        t_range = np.linspace(-np.pi, np.pi, samples)
         pair_range = [(polarity, t)
                       for t in t_range for polarity in [False, True]]
         points = []

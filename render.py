@@ -1,11 +1,9 @@
 import OpenGL.GL as gl
 import OpenGL.GLUT as glut
-import numpy as np
 
 from PIL import Image
-from PIL import ImageOps
 
-buffer_resolution = 512
+BUFFER_RESOLUTION = 512
 
 
 def load_shader(shader_source, shader_type):
@@ -41,7 +39,7 @@ def load_program(vertex_shader_filename, fragment_shader_filename):
         gl.glDeleteProgram(program_id)
         gl.glDeleteShader(vertex_shader_id)
         gl.glDeleteShader(fragment_shader_id)
-        info = glGetProgramInfoLog(program_id)
+        info = gl.glGetProgramInfoLog(program_id)
         raise RuntimeError('Error linking program: {}'.format(info))
 
     return (program_id, vertex_shader_id, fragment_shader_id)
@@ -89,9 +87,9 @@ def set_uniforms(program_id, patch):
         if loc < 0:
             raise RuntimeError('Invalid uniform name: {}'.format(key))
 
-        if type(value) == float:
+        if isinstance(value, float):
             gl.glUniform1f(loc, value)
-        elif type(value) == tuple:
+        elif isinstance(value, tuple):
             if len(value) == 2:
                 gl.glUniform2f(loc, *value)
             elif len(value) == 3:
@@ -121,7 +119,7 @@ def init():
     glut.glutInit()
 
     glut.glutInitDisplayMode(glut.GLUT_ALPHA)
-    glut.glutInitWindowSize(buffer_resolution, buffer_resolution)
+    glut.glutInitWindowSize(BUFFER_RESOLUTION, BUFFER_RESOLUTION)
 
     glut.glutCreateWindow('')
 
@@ -135,9 +133,9 @@ def render(geometry_patches, output_filename):
         opengl_render(geometry, patch)
 
     gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
-    data = gl.glReadPixels(0, 0, buffer_resolution,
-                           buffer_resolution, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
+    data = gl.glReadPixels(0, 0, BUFFER_RESOLUTION,
+                           BUFFER_RESOLUTION, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
 
     image = Image.frombytes(
-        'RGBA', (buffer_resolution, buffer_resolution), data)
+        'RGBA', (BUFFER_RESOLUTION, BUFFER_RESOLUTION), data)
     image.save(output_filename)
