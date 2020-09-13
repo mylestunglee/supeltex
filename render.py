@@ -5,6 +5,8 @@ import numpy as np
 from PIL import Image
 from PIL import ImageOps
 
+buffer_resolution = 512
+
 def load_shader(shader_source, shader_type):
 	shader_id = gl.glCreateShader(shader_type)
 	gl.glShaderSource(shader_id, shader_source)
@@ -102,24 +104,24 @@ def opengl_render(geometry, patch):
 	unlink_shaders(program_id, vertex_shader_id, fragment_shader_id)
 	unload_vbo(vbo_id)
 
-def init(width, height):
+def init():
 	glut.glutInit()
 
 	glut.glutInitDisplayMode(glut.GLUT_ALPHA)
-	glut.glutInitWindowSize(width, height)
+	glut.glutInitWindowSize(buffer_resolution, buffer_resolution)
 
-	window = glut.glutCreateWindow('')
+	glut.glutCreateWindow('')
 
 	gl.glDepthMask(gl.GL_FALSE)
 	gl.glEnable(gl.GL_BLEND);
 	gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 
-def render(width, height, geometry_patches, output_filename):
+def render(geometry_patches, output_filename):
 	for geometry, patch in geometry_patches:
 		opengl_render(geometry, patch)
 
 	gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
-	data = gl.glReadPixels(0, 0, width, height, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
+	data = gl.glReadPixels(0, 0, buffer_resolution, buffer_resolution, gl.GL_RGBA, gl.GL_UNSIGNED_BYTE)
 
-	image = Image.frombytes('RGBA', (width, height), data)
+	image = Image.frombytes('RGBA', (buffer_resolution, buffer_resolution), data)
 	image.save(output_filename)

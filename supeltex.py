@@ -6,9 +6,8 @@ import os
 import render
 import tqdm
 from PIL import Image
+from render import buffer_resolution as tile_resolution
 
-tile_resolution = 512
-tile_grid_size = 16
 temp_directory = 'temp'
 
 def generate(
@@ -20,6 +19,7 @@ def generate(
 	with open(parameters_filename) as file:
 		raw_parameters = file.read()
 
+	tile_grid_size = 16
 	parameters = json.loads(raw_parameters)
 	supels = parse_supels(parameters)
 	patches = parse_patches(parameters)
@@ -28,8 +28,8 @@ def generate(
 		os.mkdir(temp_directory)
 
 	generate_patch_vertices(patches, supels, samples, threads)
-	generate_tiles(patches)
-	compile_tiles(target_resolution, texture_filename)
+	generate_tiles(patches, tile_grid_size)
+	compile_tiles(target_resolution, texture_filename, tile_grid_size)
 
 def parse_supels(parameters):
 	supels = {}
@@ -75,8 +75,8 @@ def generate_patch_vertices(patches, supels, samples, threads):
 		chunk = vertices.flatten().astype(np.float32)
 		np.save(filename, chunk)
 
-def generate_tiles(patches):
-	render.init(tile_resolution, tile_resolution)
+def generate_tiles(patches, tile_grid_size):
+	render.init()
 
 	def generate_tile_at(x, y):
 		filename = generate_tile_filename(x, y)
@@ -112,9 +112,9 @@ def generate_tile(patches, scale, offset_x, offset_y, tile_filename):
 		chunk = np.load(generate_chunk_filename(name))
 		geometry_patches.append((chunk, patch))
 
-	render.render(tile_resolution, tile_resolution, geometry_patches, tile_filename)
+	render.render(geometry_patches, tile_filename)
 
-def compile_tiles(target_resolution, texture_filename):
+def compile_tiles(target_resolution, texture_filename, tile_grid_size):
 	compile_size = tile_grid_size * tile_resolution
 	compiled = Image.new('RGBA', (compile_size, compile_size))
 
