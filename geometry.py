@@ -1,4 +1,4 @@
-from pathos.multiprocessing import ProcessingPool as Pool
+import pathos.multiprocessing as mp
 import numpy as np
 import math
 import tqdm
@@ -70,7 +70,7 @@ def calc_parametric_dual(t_1, parameters_1, parameters_2, error_tolerance=1e-3):
 
 	return solution
 
-def calc_geometry(parameters_1, parameters_2, samples=50, threads=8, progress_bar=None):
+def calc_geometry(parameters_1, parameters_2, samples=50, processes=8, progress_bar=None):
 	def calc_point_1(t):
 		point = calc_parametric_point(t, parameters_1)
 		return np.array([point[0], point[1], t, 0])
@@ -88,7 +88,7 @@ def calc_geometry(parameters_1, parameters_2, samples=50, threads=8, progress_ba
 		else:
 			return calc_point_2(t)
 
-	with Pool(threads) as pool:
+	with mp.ProcessingPool(processes) as pool:
 		t_range = np.linspace(-math.pi, math.pi, samples)
 		pair_range = [(polarity, t) for t in t_range for polarity in [False, True]]
 		points = []

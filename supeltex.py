@@ -15,7 +15,7 @@ def generate(
 		texture_filename='texture.png',
 		target_resolution=1024,
 		samples=1000,
-		threads=8):
+		processes=8):
 	with open(parameters_filename) as file:
 		raw_parameters = file.read()
 
@@ -27,7 +27,7 @@ def generate(
 	if not os.path.exists(temp_directory):
 		os.mkdir(temp_directory)
 
-	generate_patch_vertices(patches, supels, samples, threads)
+	generate_patch_vertices(patches, supels, samples, processes)
 	generate_tiles(patches, tile_grid_size)
 	compile_tiles(target_resolution, texture_filename, tile_grid_size)
 
@@ -60,7 +60,7 @@ def parse_patches(parameters):
 
 	return patches
 
-def generate_patch_vertices(patches, supels, samples, threads):
+def generate_patch_vertices(patches, supels, samples, processes):
 	progress_bar = tqdm.tqdm(total = 2 * len(patches) * samples, desc='preparing')
 
 	for name, patch in patches.items():
@@ -71,7 +71,7 @@ def generate_patch_vertices(patches, supels, samples, threads):
 
 		inner = supels[patch['inner']]
 		outer = supels[patch['outer']]
-		vertices = geometry.calc_geometry(outer, inner, samples, threads, progress_bar)
+		vertices = geometry.calc_geometry(outer, inner, samples, processes, progress_bar)
 		chunk = vertices.flatten().astype(np.float32)
 		np.save(filename, chunk)
 
