@@ -9,10 +9,11 @@ from PIL import Image
 
 tile_resolution = 512
 tile_grid_size = 16
+temp_directory = 'temp'
 
 def generate(
 		parameters_filename='parameters.json',
-		tile_filename='tile.png',
+		texture_filename='texture.png',
 		target_resolution=1024,
 		samples=1000,
 		threads=8):
@@ -23,12 +24,12 @@ def generate(
 	supels = parse_supels(parameters)
 	patches = parse_patches(parameters)
 
-	if not os.path.exists('temp'):
-		os.mkdir('temp')
+	if not os.path.exists(temp_directory):
+		os.mkdir(temp_directory)
 
 	generate_patch_vertices(patches, supels, samples, threads)
 	generate_tiles(patches)
-	compile_tiles(target_resolution)
+	compile_tiles(target_resolution, texture_filename)
 
 def parse_supels(parameters):
 	supels = {}
@@ -60,38 +61,43 @@ def parse_patches(parameters):
 	return patches
 
 def generate_patch_vertices(patches, supels, samples, threads):
+	progress_bar = tqdm.tqdm(total = 2 * len(patches) * samples, desc='preparing')
+
 	for name, patch in patches.items():
-		filename = 'temp/{}.npy'.format(name)
+		filename = generate_chunk_filename(name)
 
 		if os.path.exists(filename):
 			continue
 
 		inner = supels[patch['inner']]
 		outer = supels[patch['outer']]
-		vertices = geometry.calc_geometry(outer, inner, samples, threads, 'preparing geometry for {}'.format(name))
+		vertices = geometry.calc_geometry(outer, inner, samples, threads, progress_bar)
 		chunk = vertices.flatten().astype(np.float32)
 		np.save(filename, chunk)
 
 def generate_tiles(patches):
 	render.init(tile_resolution, tile_resolution)
 
-	def generate_from_pair(pair):
-		x, y = pair
-		filename = 'temp/x{}_y{}.png'.format(x, y)
+	def generate_tile_at(x, y):
+		filename = generate_tile_filename(x, y)
 
-		if not os.path.exists(filename):
-			offset = 1 - tile_grid_size
-			generate_tile(
-				patches,
-				float(tile_grid_size),
-				-(2.0 * x + offset),
-				-(2.0 * y + offset),
-				filename)
+		if os.path.exists(filename):
+			return
 
-	pairs = [(x, y) for x in range(tile_grid_size) for y in range(tile_grid_size)]
+		offset = tile_grid_size - 1.0
+		generate_tile(
+			patches,
+			float(tile_grid_size),
+			offset - 2.0 * x,
+			offset - 2.0 * y,
+			filename)
 
-	for pair in tqdm.tqdm(pairs, desc='rendering'):
-		generate_from_pair(pair)
+	progress_bar = tqdm.tqdm(total = tile_grid_size ** 2, desc='rendering')
+
+	for x in range(tile_grid_size):
+		for y in range(tile_grid_size):
+			generate_tile_at(x, y)
+			progress_bar.update(1)
 
 def generate_tile(patches, scale, offset_x, offset_y, tile_filename):
 	geometry_patches = []
@@ -103,21 +109,32 @@ def generate_tile(patches, scale, offset_x, offset_y, tile_filename):
 		patch['offset'] = (offset_x, offset_y)
 		del patch['inner']
 		del patch['outer']
-		chunk_filename = 'temp/{}.npy'.format(name)
-		chunk = np.load(chunk_filename)
+		chunk = np.load(generate_chunk_filename(name))
 		geometry_patches.append((chunk, patch))
 
 	render.render(tile_resolution, tile_resolution, geometry_patches, tile_filename)
 
-def compile_tiles(target_resolution):
+def compile_tiles(target_resolution, texture_filename):
 	compile_size = tile_grid_size * tile_resolution
-	stitched = Image.new('RGBA', (compile_size, compile_size))
+	compiled = Image.new('RGBA', (compile_size, compile_size))
+
+	progress_bar = tqdm.tqdm(total = tile_grid_size ** 2, desc='compiling')
+
 	for x in range(tile_grid_size):
-	        for y in range(tile_grid_size):
-	                name = 'temp/x{}_y{}.png'.format(x, y)
-	                tile = Image.open(name)
-	                stitched.paste(tile, box=(x * tile_resolution, y * tile_resolution))
-	stitched.save('temp/stitched.png')
+		for y in range(tile_grid_size):
+			tile_filename = generate_tile_filename(x, y)
+			tile = Image.open(tile_filename)
+			compiled.paste(tile, box=(x * tile_resolution, y * tile_resolution))
+			progress_bar.update(1)
+
+	resized = compiled.resize((target_resolution, target_resolution), Image.BOX)
+	resized.save(texture_filename)
+
+def generate_chunk_filename(name):
+	return os.path.join(temp_directory, '{}.npy'.format(name))
+
+def generate_tile_filename(x, y):
+	return os.path.join(temp_directory, 'x{}_y{}.png'.format(x, y))
 
 if __name__ == '__main__':
 	generate()
