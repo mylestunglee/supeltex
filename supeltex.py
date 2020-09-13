@@ -7,19 +7,20 @@ import render
 import tqdm
 from PIL import Image
 from render import buffer_resolution as tile_resolution
+import argparse
 
 temp_directory = 'temp'
 
 def generate(
-		parameters_filename='parameters.json',
-		texture_filename='texture.png',
-		target_resolution=1024,
-		samples=1000,
-		processes=8):
+		parameters_filename,
+		texture_filename,
+		tile_grid_size,
+		target_resolution,
+		samples,
+		processes):
 	with open(parameters_filename) as file:
 		raw_parameters = file.read()
 
-	tile_grid_size = 16
 	parameters = json.loads(raw_parameters)
 	supels = parse_supels(parameters)
 	patches = parse_patches(parameters)
@@ -136,5 +137,32 @@ def generate_chunk_filename(name):
 def generate_tile_filename(x, y):
 	return os.path.join(temp_directory, 'x{}_y{}.png'.format(x, y))
 
+def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('parameters', help='Parameters defintion filepath')
+	parser.add_argument('source_resolution', type=positive_int, help='Supersampled source resolution')
+	parser.add_argument('target_resolution', type=positive_int, help='Downscaled target resolution')
+	parser.add_argument('-o', '--output', help='Output target image filepath', default='texture.png')
+	parser.add_argument('-s', '--samples', type=positive_int, help='Number of samples used in geometry', default=256)
+	parser.add_argument('-p', '--processes', type=positive_int, help='Number of processes used in preparation stage', default=1)
+	args = parser.parse_args()
+
+	if args.source_resolution < args.target_resolution:
+		print('Source resolution must not be smaller than target resolution', file=sys.stderr)
+		return
+
+	if not os.path.exists(args.parameters):
+		print('Parameters defintion filepath does not exist', file=sys.stderr)
+		return
+
+	tile_grid_size = max(1, int(np.ceil(args.source_resolution / tile_resolution)))
+	generate(args.parameters, args.output, tile_grid_size, args.target_resolution, args.samples, args.processes)
+
+def positive_int(value):
+	parsed = int(value)
+	if parsed <= 0:
+		raise argparse.ArgumentTypeError('{} is an invalid positive integer value'.format(value))
+	return parsed
+
 if __name__ == '__main__':
-	generate()
+	main()
