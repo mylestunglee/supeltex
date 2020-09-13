@@ -108,7 +108,7 @@ def init(width, height):
 	glut.glutInitDisplayMode(glut.GLUT_ALPHA)
 	glut.glutInitWindowSize(width, height)
 
-	window = glut.glutCreateWindow('a')
+	window = glut.glutCreateWindow('')
 
 	gl.glDepthMask(gl.GL_FALSE)
 	gl.glEnable(gl.GL_BLEND);

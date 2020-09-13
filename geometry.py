@@ -84,18 +84,19 @@ def calc_geometry(parameters_1, parameters_2, samples=50, threads=8, progress_ba
 		polarity, t = pair
 
 		if not polarity:
-			result = calc_point_1(t)
+			return calc_point_1(t)
 		else:
-			result = calc_point_2(t)
-
-		#if not progress_bar is None:
-		#	progress_bar.update(1)
-		return result
+			return calc_point_2(t)
 
 	with Pool(threads) as pool:
 		t_range = np.linspace(-math.pi, math.pi, samples)
 		pair_range = [(polarity, t) for t in t_range for polarity in [False, True]]
-		points = list(pool.imap(calc_point, pair_range))
+		points = []
+
+		for point in pool.imap(calc_point, pair_range):
+			progress_bar.update(1)
+			points.append(point)
+
 		pool.close()
 
 	return np.array(points)
